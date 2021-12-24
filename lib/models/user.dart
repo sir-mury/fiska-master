@@ -128,3 +128,10 @@ class UserLogout {
 
   Map<String, dynamic> toJson() => {"fcmToken": fcmToken, "userType": userType};
 }
+
+class ChangePassword {
+  final String oldPassword;
+  final String newPasword;
+
+  ChangePassword({this.oldPassword, this.newPasword});
+}

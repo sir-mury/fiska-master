@@ -34,19 +34,7 @@ class _AuthenticationState extends State<Authentication>
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: Text(
-          'Login',
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 28,
-          ),
-        ),
-        backgroundColor: Colors.black12,
-        brightness: Brightness.light,
-        elevation: 0,
-        actionsIconTheme: IconThemeData(color: Colors.black),
-        iconTheme: IconThemeData(color: Colors.black),
-        bottom: TabBar(
+        title: TabBar(
           indicator: BoxDecoration(
             color: Colors.orange[300],
             borderRadius: BorderRadius.horizontal(
@@ -59,7 +47,7 @@ class _AuthenticationState extends State<Authentication>
           tabs: [
             Tab(
               child: Text(
-                'Sign Up',
+                'Sign In',
                 style: TextStyle(
                   color: Colors.black,
                   fontSize: 18,
@@ -68,7 +56,7 @@ class _AuthenticationState extends State<Authentication>
             ),
             Tab(
               child: Text(
-                'Sign In',
+                'Register',
                 style: TextStyle(
                   color: Colors.black,
                   fontSize: 18,
@@ -77,14 +65,20 @@ class _AuthenticationState extends State<Authentication>
             ),
           ],
         ),
+        backgroundColor: Colors.black12,
+        brightness: Brightness.light,
+        elevation: 0,
+        actionsIconTheme: IconThemeData(color: Colors.black),
+        iconTheme: IconThemeData(color: Colors.black),
+        //bottom:
       ),
       body: TabBarView(
         controller: _tabController,
         children: [
-          CreateUser(
+          SignIn(
             animate: changeMytab,
           ),
-          SignIn(
+          CreateUser(
             animate: changeMytab,
           ),
         ],

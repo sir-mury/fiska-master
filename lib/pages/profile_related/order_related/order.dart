@@ -1,3 +1,4 @@
+import 'package:fiska/controllers/orderController.dart';
 import 'package:fiska/widgets/orderUI.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -7,6 +8,8 @@ class OrderListingPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    OrderController orderController = Get.put(OrderController());
+    orderController.fetchOrderListing();
     return Scaffold(
       appBar: AppBar(
         elevation: 0.0,
@@ -28,7 +31,17 @@ class OrderListingPage extends StatelessWidget {
           ),
         ),
       ),
-      body: OrderListingUI(),
+      body: Obx(() {
+        if (orderController.isLoading.value) {
+          return Center(
+            child: CircularProgressIndicator(
+              color: Colors.orange[300],
+            ),
+          );
+        } else {
+          return OrderListingUI();
+        }
+      }),
     );
   }
 }
@@ -38,6 +51,7 @@ class OrderDetailsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    //OrderController orderController = Get.put(OrderController());
     return Scaffold(
       appBar: AppBar(
         elevation: 0.0,

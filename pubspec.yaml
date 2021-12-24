@@ -40,6 +40,7 @@ dependencies:
   material_dialogs: ^1.1.0
   popup_box: ^0.1.0
   progress_stepper: ^0.1.0
+  skeleton_text: ^3.0.0
   validated: ^2.0.0
 
 dev_dependencies:

@@ -1,3 +1,4 @@
+import 'package:fiska/controllers/exception_controller.dart';
 import 'package:fiska/models/cart.dart';
 import 'package:fiska/models/product.dart';
 import 'package:fiska/pages/cartPage.dart';
@@ -6,7 +7,7 @@ import 'package:flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-class CartController extends GetxController {
+class CartController extends GetxController with BaseController {
   var inCart = false.obs;
   var outCart = false.obs;
   var cartList = [].obs;
@@ -14,22 +15,25 @@ class CartController extends GetxController {
   final cartMap = {}.obs;
   var isLoading = true.obs;
 
-  @override
-  void onInit() {
-    fetchShippingCartListing();
-    super.onInit();
-  }
-
   void fetchShippingCartListing() async {
     try {
       isLoading(true);
-      var cartItems = await ApiService.shippingCartListing();
+      var cartItems =
+          await ApiService.shippingCartListing().catchError(handleError);
       if (cartItems != null) {
         cartItems.available.forEach((element) {
-          cartList.add(element);
+          if (!cartList.contains(element)) {
+            cartList.add(element);
+          } else {
+            print("available in cartlist already");
+          }
         });
         cartItems.notAvailable.forEach((element) {
-          cartList.add(element);
+          if (!cartList.contains(element)) {
+            cartList.add(element);
+          } else {
+            print("not available in cartlist already");
+          }
         });
       }
     } catch (e) {
@@ -54,7 +58,7 @@ class CartController extends GetxController {
       selprod_id: selprod_id,
       ufp_id: ufp_id,
     );
-    var result = await ApiService.addToCart(item);
+    var result = await ApiService.addToCart(item).catchError(handleError);
     if (result == "1") {
       inCart(true);
     } else {
@@ -65,7 +69,7 @@ class CartController extends GetxController {
   void removeFromCart(String key, fulfilmentType) async {
     RemoveFromCart item =
         RemoveFromCart(key: key, fulfilmentType: fulfilmentType);
-    var result = await ApiService.removeFromCart(item);
+    var result = await ApiService.removeFromCart(item).catchError(handleError);
     if (result == "1") {
       outCart(true);
     } else {

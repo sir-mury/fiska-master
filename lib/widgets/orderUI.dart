@@ -1,3 +1,4 @@
+import 'package:fiska/controllers/orderController.dart';
 import 'package:fiska/pages/profile_related/order_related/order.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -7,6 +8,8 @@ class OrderListingUI extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    OrderController orderController = Get.find<OrderController>();
+    orderController.fetchOrderListing();
     double height = MediaQuery.of(context).size.height;
     List status = [
       "All",
@@ -91,6 +94,7 @@ class OrderListingUI extends StatelessWidget {
                 physics: ScrollPhysics(),
                 shrinkWrap: true,
                 itemBuilder: (context, index) {
+                  var product = orderController.orderList[index];
                   return InkWell(
                     onTap: () {
                       Get.to(() => OrderDetailsPage());
@@ -107,7 +111,7 @@ class OrderListingUI extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                "OrderID:",
+                                "OrderID: ${product.orderId}",
                                 style: TextStyle(
                                   fontWeight: FontWeight.w600,
                                   fontSize: 16,
@@ -245,7 +249,7 @@ class OrderListingUI extends StatelessWidget {
                       height: MediaQuery.of(context).size.height * 0.02,
                       color: Colors.transparent,
                     ),
-                itemCount: 5),
+                itemCount: orderController.orderList.length),
           ],
         ),
       ),

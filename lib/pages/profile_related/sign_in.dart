@@ -155,8 +155,7 @@ class _SignInState extends State<SignIn> {
                   _formKey.currentState.save();
                   authController.login(username, password, userType);
                   print("user: ${authController.user.value.userName}");
-                  if (authController.isLoading.value == false &&
-                      authController.isAuthenticated.value == true) {
+                  if (authController.isAuthenticated.value == true) {
                     await showFlash(
                       context: context,
                       duration: Duration(seconds: 4),
@@ -192,7 +191,7 @@ class _SignInState extends State<SignIn> {
                           ),
                           actions: [
                             TextButton(
-                              onPressed: () => Navigator.pop(context),
+                              onPressed: () => Get.back(),
                               child: Text(
                                 "Ok",
                                 style: TextStyle(

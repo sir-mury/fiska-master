@@ -1,12 +1,17 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:fiska/models/cart.dart';
+import 'package:fiska/models/orders.dart';
 import 'package:fiska/models/product_detail.dart';
 import 'package:fiska/models/user.dart';
+import 'package:fiska/services/exception_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:fiska/models/product.dart';
 import 'package:dio/dio.dart';
 
 class ApiService {
+  static const int TIME_OUT_DURATION = 30;
   static var client = http.Client();
   static var baseUrl = "https://fiskah.com/app-api/v2.3/";
   static Map<String, String> headers = {};
@@ -28,10 +33,13 @@ class ApiService {
   }
 
   static Future<List<ProductElement>> fetchProducts() async {
+    var uri = Uri.parse("$baseUrl" + "products/");
     try {
-      http.Response response = await http.get(
-        Uri.parse("$baseUrl" + "products/"),
-      );
+      http.Response response = await http
+          .get(
+            uri,
+          )
+          .timeout(Duration(seconds: TIME_OUT_DURATION));
       if (response.statusCode == 200) {
         String jsonResponse = response.body;
         var product = productFromJson(jsonResponse);
@@ -39,15 +47,19 @@ class ApiService {
       } else {
         return null;
       }
-    } catch (error) {
-      return error;
+    } on SocketException {
+      throw FetchDataException('No Internet connection', uri.toString());
+    } on TimeoutException {
+      throw ApiNotRespondingException(
+          "API not responding in time", uri.toString());
     }
   }
 
   static Future<ProductData> fetchProductsDetails(int id) async {
+    var uri = Uri.parse("$baseUrl" + 'products/view/$id/');
     try {
       http.Response response =
-          await http.post(Uri.parse("$baseUrl" + 'products/view/$id/'));
+          await http.post(uri).timeout(Duration(seconds: TIME_OUT_DURATION));
       if (response.statusCode == 200) {
         String jsonResponse = response.body;
         var productDetail = productDetailFromJson(jsonResponse);
@@ -56,29 +68,28 @@ class ApiService {
       } else {
         return null;
       }
-    } catch (error) {
-      print("An error occurred");
-      return error;
+    } on SocketException {
+      throw FetchDataException('No Internet connection', uri.toString());
+    } on TimeoutException {
+      throw ApiNotRespondingException(
+          "API not responding in time", uri.toString());
     }
   }
 
   static Future<UserData> login(UserLogin userLogin) async {
+    var uri = Uri.parse("$baseUrl" + "guest-user/login/");
     var body = UserLogin(
       username: userLogin.username,
       password: userLogin.password,
       userType: userLogin.userType,
     ).toJson();
-    //print("body: $body");
-    var body1 = {
-      "username": userLogin.username,
-      "password": userLogin.password,
-      "userType": "1"
-    };
     try {
-      http.Response response = await http.post(
-        Uri.parse("$baseUrl" + "guest-user/login/"),
-        body: body,
-      );
+      http.Response response = await http
+          .post(
+            uri,
+            body: body,
+          )
+          .timeout(Duration(seconds: TIME_OUT_DURATION));
       updateCookie(response);
       //print(response);
       if (response.statusCode == 200) {
@@ -89,19 +100,23 @@ class ApiService {
       } else {
         return null;
       }
-    } catch (e) {
-      print("Login Failed: $e");
-      return e;
+    } on SocketException {
+      throw FetchDataException('No Internet connection', uri.toString());
+    } on TimeoutException {
+      throw ApiNotRespondingException(
+          "API not responding in time", uri.toString());
     }
   }
 
   static Future<String> logout(UserLogout userLogout) async {
+    var uri = Uri.parse("$baseUrl" + 'guest-user/logout/');
     Map<String, dynamic> body =
         UserLogout(fcmToken: userLogout.fcmToken, userType: userLogout.userType)
             .toJson();
     try {
       http.Response response = await http
-          .post(Uri.parse("$baseUrl" + 'guest-user/logout/'), body: body);
+          .post(uri, body: body)
+          .timeout(Duration(seconds: TIME_OUT_DURATION));
       if (response.statusCode == 200) {
         String jsonResponse = response.body;
         var result = jsonDecode(jsonResponse);
@@ -113,19 +128,24 @@ class ApiService {
       } else {
         return null;
       }
-    } catch (e) {
-      print("logout Error: $e");
-      return e;
+    } on SocketException {
+      throw FetchDataException('No Internet connection', uri.toString());
+    } on TimeoutException {
+      throw ApiNotRespondingException(
+          "API not responding in time", uri.toString());
     }
   }
 
   static Future<String> addToCart(AddToCart item) async {
+    var uri = Uri.parse("$baseUrl" + 'cart/add/');
     var body = item.toJson();
     try {
-      http.Response response = await http.post(
-        Uri.parse("$baseUrl" + 'cart/add/'),
-        body: body,
-      );
+      http.Response response = await http
+          .post(
+            uri,
+            body: body,
+          )
+          .timeout(Duration(seconds: TIME_OUT_DURATION));
       if (response.statusCode == 200) {
         String jsonResponse = response.body;
         var result = jsonDecode(jsonResponse);
@@ -137,19 +157,24 @@ class ApiService {
       } else {
         return null;
       }
-    } catch (e) {
-      print("add to cart error:$e");
-      return e;
+    } on SocketException {
+      throw FetchDataException('No Internet connection', uri.toString());
+    } on TimeoutException {
+      throw ApiNotRespondingException(
+          "API not responding in time", uri.toString());
     }
   }
 
   static Future<String> removeFromCart(RemoveFromCart item) async {
+    var uri = Uri.parse("$baseUrl" + 'cart/remove/');
     var body = item.toJson();
     try {
-      http.Response response = await http.post(
-        Uri.parse("$baseUrl" + 'cart/remove/'),
-        body: body,
-      );
+      http.Response response = await http
+          .post(
+            uri,
+            body: body,
+          )
+          .timeout(Duration(seconds: TIME_OUT_DURATION));
       if (response.statusCode == 200) {
         String jsonResponse = response.body;
         var result = jsonDecode(jsonResponse);
@@ -164,18 +189,23 @@ class ApiService {
         client.close();
         return null;
       }
-    } catch (e) {
-      print("Remove cart error:$e");
-      return e;
+    } on SocketException {
+      throw FetchDataException('No Internet connection', uri.toString());
+    } on TimeoutException {
+      throw ApiNotRespondingException(
+          "API not responding in time", uri.toString());
     }
   }
 
   static Future<Products> shippingCartListing() async {
+    var uri = Uri.parse("$baseUrl" + 'cart/listing/2');
     try {
-      http.Response response = await http.get(
-        Uri.parse("$baseUrl" + 'cart/listing/2'),
-        headers: headers,
-      );
+      http.Response response = await http
+          .get(
+            uri,
+            headers: headers,
+          )
+          .timeout(Duration(seconds: TIME_OUT_DURATION));
       if (response.statusCode == 200) {
         String jsonResponse = response.body;
         print(jsonResponse);
@@ -184,11 +214,60 @@ class ApiService {
       } else {
         return null;
       }
-    } catch (e) {
-      print("cart listing error: $e");
-      return e;
+    } on SocketException {
+      throw FetchDataException('No Internet connection', uri.toString());
+    } on TimeoutException {
+      throw ApiNotRespondingException(
+          "API not responding in time", uri.toString());
     }
   }
 
-  static Future orderListing() async {}
+  static Future<OrderListingData> orderListing() async {
+    var uri = Uri.parse(baseUrl + "buyer/order-search-listing");
+    try {
+      http.Response response = await client
+          .post(uri, headers: headers)
+          .timeout(Duration(seconds: TIME_OUT_DURATION));
+      if (response.statusCode == 200) {
+        var jsonResponse = response.body;
+        OrderListing orderListing = orderListingFromJson(jsonResponse);
+        return orderListing.data;
+      } else {
+        return null;
+      }
+    } on SocketException {
+      throw FetchDataException('No Internet connection', uri.toString());
+    } on TimeoutException {
+      throw ApiNotRespondingException(
+          "API not responding in time", uri.toString());
+    }
+  }
+
+  static Future<OrderDetailsData> orderDetails(String id) async {
+    var uri = Uri.parse(baseUrl + "buyer/view-order/$id/");
+    try {
+      http.Response response = await client
+          .get(
+            uri,
+            headers: headers,
+          )
+          .timeout(Duration(seconds: TIME_OUT_DURATION));
+      if (response.statusCode == 200) {
+        var jsonResponse = response.body;
+        OrderDetails orderDetails = orderDetailsFromJson(jsonResponse);
+        return orderDetails.data;
+      } else {
+        return null;
+      }
+    } on SocketException {
+      throw FetchDataException('No Internet connection', uri.toString());
+    } on TimeoutException {
+      throw ApiNotRespondingException(
+          "API not responding in time", uri.toString());
+    }
+  }
+
+  static Future userDetailsInfo() async {}
+
+  static Future resetPassword(ChangePassword password) async {}
 }
